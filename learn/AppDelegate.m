@@ -7,9 +7,9 @@
 //
 
 #import "AppDelegate.h"
-
+#import <AVFoundation/AVFoundation.h>
 @interface AppDelegate ()
-
+@property (nonatomic,strong)AVAudioPlayer *player;
 @end
 
 @implementation AppDelegate
@@ -17,6 +17,9 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    AVAudioSession * session = [AVAudioSession sharedInstance];
+    [session setActive:YES error:nil];
+    [session setCategory:AVAudioSessionCategoryPlayback error:nil];
     return YES;
 }
 
