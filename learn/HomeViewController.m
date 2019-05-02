@@ -1,84 +1,91 @@
-//
-//  HomeViewController.m
-//  learn
-//
-//  Created by justin on 2019/4/21.
-//  Copyright © 2019年 justin. All rights reserved.
-//
-
 #import "HomeViewController.h"
-#import <WebKit/WebKit.h>
+#import "Songs.h"
 
-@interface HomeViewController ()
-
+@interface HomeViewController ()<UITableViewDataSource>
+@property (nonatomic,strong) UITableView *tableView;
+@property (nonatomic,strong) NSMutableArray *dataSource;
 @end
 
 @implementation HomeViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    
-    //创建网页配置对象
-    WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
-    
-    // 创建设置对象
-    WKPreferences *preference = [[WKPreferences alloc]init];
-    //最小字体大小 当将javaScriptEnabled属性设置为NO时，可以看到明显的效果
-    preference.minimumFontSize = 0;
-    //设置是否支持javaScript 默认是支持的
-    preference.javaScriptEnabled = YES;
-    // 在iOS上默认为NO，表示是否允许不经过用户交互由javaScript自动打开窗口
-    preference.javaScriptCanOpenWindowsAutomatically = YES;
-    config.preferences = preference;
-    
-    // 是使用h5的视频播放器在线播放, 还是使用原生播放器全屏播放
-    config.allowsInlineMediaPlayback = YES;
-    //设置视频是否需要用户手动播放  设置为NO则会允许自动播放
-    config.mediaTypesRequiringUserActionForPlayback = YES;
-    //设置是否允许画中画技术 在特定设备上有效
-    config.allowsPictureInPictureMediaPlayback = YES;
-    //设置请求的User-Agent信息中应用程序名称 iOS9后可用
-    config.applicationNameForUserAgent = @"ChinaDailyForiPad";
-    //自定义的WKScriptMessageHandler 是为了解决内存不释放的问题
-//    WeakWebViewScriptMessageDelegate *weakScriptMessageDelegate = [[WeakWebViewScriptMessageDelegate alloc] initWithDelegate:self];
-    //这个类主要用来做native与JavaScript的交互管理
-    WKUserContentController * wkUController = [[WKUserContentController alloc] init];
-    //注册一个name为jsToOcNoPrams的js方法
-//    [wkUController addScriptMessageHandler:weakScriptMessageDelegate  name:@"jsToOcNoPrams"];
-//    [wkUController addScriptMessageHandler:weakScriptMessageDelegate  name:@"jsToOcWithPrams"];
-    config.userContentController = wkUController;
-    
-    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height) configuration:config];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://www.baidu.com"]];
-        [webView loadRequest:request];
-    [self.view addSubview:webView];
-    
-    
-    UIButton *btn = [[UIButton alloc]initWithFrame:CGRectMake(0, 50, 100, 40)];
-    [btn setTitle:@"返回上一页" forState:UIControlStateNormal];
-    btn.backgroundColor = [UIColor blackColor];
-    [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [btn addTarget:self action:@selector(backBtn:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:btn];
-    
-}
-
-- (void)backBtn:(UIButton *)btn
+- (void)viewDidLoad
 {
-    [self dismissViewControllerAnimated:YES completion:^{
-        ;
-    }];
+    [super viewDidLoad];
+    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - 80) style:UITableViewStyleGrouped];
+    //设置列表数据源
+    self.tableView.backgroundColor = [UIColor whiteColor];
+    self.tableView.allowsSelection = YES;
+    self.tableView.dataSource = self;
+    [self.view addSubview:self.tableView];
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+- (UIViewController *)initdata:(NSMutableArray *)datas{
+    _dataSource = datas;
+    return self;
 }
-*/
+
+//返回列表分组数，默认为1
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+//返回列表每个分组section拥有cell行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _dataSource.count;
+}
+
+//配置每个cell，随着用户拖拽列表，cell将要出现在屏幕上时此方法会不断调用返回cell
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+
+    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
+    cell.userInteractionEnabled = YES;
+    UserEntity *entity = _dataSource[indexPath.row];
+    cell.detailTextLabel.text = entity.phone;
+    cell.textLabel.text = entity.name;
+    
+//    UIButton  *playButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    playButton.frame = CGRectMake(0 , 0, cell.frame.size.width, cell.frame.size.height);
+//    [playButton addTarget:self action:@selector(playVoice:) forControlEvents:UIControlEventTouchUpInside];
+//    playButton.tag = indexPath.row;
+//    [cell.contentView addSubview:playButton];
+
+    
+    //给cell设置accessoryType或者accessoryView
+    //也可以不设置，这里纯粹为了展示cell的常用可设置选项
+//    if (indexPath.section == 0 && indexPath.row == 0) {
+//        cell.accessoryType = UITableViewCellAccessoryDetailButton;
+//    }else if (indexPath.section == 0 && indexPath.row == 1) {
+//        cell.accessoryView = [[UISwitch alloc] initWithFrame:CGRectZero];
+//    } else {
+//        cell.accessoryType = UITableViewCellAccessoryNone;
+//    }
+    
+    //设置cell没有选中效果
+    //cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    return cell;
+}
+
+- (void)playVoice:(UIButton *)btn{
+    NSLog(@"%ld",(long)btn.tag);
+}
+
+//返回列表每个分组头部说明
+- (UIView *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
+    return nil;
+}
+
+//返回列表每个分组尾部说明
+- (UIView *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+    return nil;
+}
+
+-(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
+
+{
+    
+    NSLog(@"%@",indexPath);
+    
+}
 
 @end

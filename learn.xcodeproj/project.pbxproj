@@ -17,6 +17,7 @@
 		D096526E226B35210037F9AE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D096526C226B35210037F9AE /* Main.storyboard */; };
 		D0965276226B35230037F9AE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D0965275226B35230037F9AE /* main.m */; };
 		D0965289226C1DAF0037F9AE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D0965288226C1DAE0037F9AE /* LaunchScreen.storyboard */; };
+		D0BE512A2277D6C6001118C9 /* Songs.m in Sources */ = {isa = PBXBuildFile; fileRef = D0BE51292277D6C6001118C9 /* Songs.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,12 @@
 		D0965274226B35230037F9AE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D0965275226B35230037F9AE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		D0965288226C1DAE0037F9AE /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ../../../.Trash/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D0BE512022775858001118C9 /* libobjc-trampolines.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libobjc-trampolines.tbd"; path = "usr/lib/libobjc-trampolines.tbd"; sourceTree = SDKROOT; };
+		D0BE512222775863001118C9 /* libobjc.A.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.A.tbd; path = usr/lib/libobjc.A.tbd; sourceTree = SDKROOT; };
+		D0BE512422775869001118C9 /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = usr/lib/libobjc.tbd; sourceTree = SDKROOT; };
+		D0BE5126227758FD001118C9 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		D0BE51292277D6C6001118C9 /* Songs.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Songs.m; sourceTree = "<group>"; };
+		D0BE512B2277D703001118C9 /* Songs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Songs.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +84,7 @@
 				D0965280226B63120037F9AE /* resource */,
 				D0965265226B35210037F9AE /* learn */,
 				D0965264226B35210037F9AE /* Products */,
+				D0BE511F22775858001118C9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -91,6 +99,7 @@
 		D0965265226B35210037F9AE /* learn */ = {
 			isa = PBXGroup;
 			children = (
+				D0BE5118227756A9001118C9 /* models */,
 				D03AFE97226CA0BB006AC953 /* views */,
 				D03AFE96226C9BC1006AC953 /* utils */,
 				D0965266226B35210037F9AE /* AppDelegate.h */,
@@ -111,6 +120,26 @@
 			children = (
 			);
 			path = resource;
+			sourceTree = "<group>";
+		};
+		D0BE5118227756A9001118C9 /* models */ = {
+			isa = PBXGroup;
+			children = (
+				D0BE51292277D6C6001118C9 /* Songs.m */,
+				D0BE512B2277D703001118C9 /* Songs.h */,
+			);
+			name = models;
+			sourceTree = "<group>";
+		};
+		D0BE511F22775858001118C9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D0BE5126227758FD001118C9 /* AssetsLibrary.framework */,
+				D0BE512422775869001118C9 /* libobjc.tbd */,
+				D0BE512222775863001118C9 /* libobjc.A.tbd */,
+				D0BE512022775858001118C9 /* libobjc-trampolines.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,6 +219,7 @@
 				D0965268226B35210037F9AE /* AppDelegate.m in Sources */,
 				D03AFE9A226CA0FC006AC953 /* HomeViewController.m in Sources */,
 				D03AFE9D226E0E3E006AC953 /* LAContextManager.m in Sources */,
+				D0BE512A2277D6C6001118C9 /* Songs.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

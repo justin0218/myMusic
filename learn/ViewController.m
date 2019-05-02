@@ -1,30 +1,41 @@
 #import "ViewController.h"
 #import "./utils/AudioPlayer.h"
 #import <AVKit/AVKit.h>
+#import "Songs.h"
 
-@interface ViewController () <NSURLSessionDownloadDelegate>
+@interface ViewController () <NSURLSessionDownloadDelegate,UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
 @property float itemY;
 @property (nonatomic,strong) AVAudioPlayer *player;
-@property (nonatomic,strong) UIScrollView *bodyScrollView;
 @property (nonatomic,strong) NSMutableArray *songsArray;
 @property UILabel *labTip;
 @property (nonatomic,strong) UISearchBar *searchBar;
+@property (nonatomic,strong) UITableView *tableView;
+@property (nonatomic,strong) NSMutableArray *dataSource;
+@property (nonatomic,strong) NSFileManager *fileManager;
 @end
 
 @implementation ViewController
 -(void)viewDidLoad{
+    
+    self.fileManager = [NSFileManager defaultManager];
+    
     [self rederHeader];
-    [self renderBody];
+    [self renderBody:[self getLocalMusics]];
     [self renderFooter];
-//    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(100, 600, 100, 40)];
-//    btn.backgroundColor = [UIColor greenColor];
-//    [btn setTitle:@"开始下载" forState:UIControlStateNormal];
-//    [btn addTarget:self action:@selector(startDownload:) forControlEvents:UIControlEventTouchUpInside];
-//    [self.view addSubview:btn];
+   
+}
 
+//结束时调用
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
+{
+    NSLog(@"结束了");
+    [self.player play];
 }
 
 - (void)rederHeader{
+    
+    
+    
     UILabel *headLable = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 147)];
     headLable.backgroundColor = [UIColor colorWithRed:57.0/255 green:192.0/255 blue:125.0/255 alpha:1];
     headLable.userInteractionEnabled = YES;
@@ -34,21 +45,18 @@
     titleLable.textAlignment = NSTextAlignmentCenter;
     [headLable addSubview:titleLable];
     
-    self.searchBar = [[UISearchBar alloc]initWithFrame:CGRectMake(12,titleLable.frame.origin.y + 46, [UIScreen mainScreen].bounds.size.width * 0.9, 40)];
+    self.searchBar = [[UISearchBar alloc]initWithFrame:CGRectMake(([UIScreen mainScreen].bounds.size.width - [UIScreen mainScreen].bounds.size.width * 0.9)/2,titleLable.frame.origin.y + 46, [UIScreen mainScreen].bounds.size.width * 0.9, 40)];
     self.searchBar.delegate = self;// 设置代理
     self.searchBar.searchBarStyle = UISearchBarStyleMinimal;
     self.searchBar.placeholder = @"搜索";
     self.searchBar.tintColor = [UIColor whiteColor];
     self.searchBar.barTintColor = [UIColor whiteColor];
-//    self.searchBar.text = @"http://fs.w.kugou.com/201904272241/160d7fb0ba84ff81a9dce587ea575549/G156/M04/1A/14/3A0DAFzCZgWAMpfkAC8k3ciDXC0566.mp3";
+
     UITextField *textfield = [self.searchBar valueForKey:@"_searchField"];
     [textfield setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     textfield.textColor = [UIColor whiteColor];
     [headLable addSubview:self.searchBar];
-
-
     [self.view addSubview:headLable];
-    
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar{
@@ -62,50 +70,24 @@
     // 通过会话在确定的URL上创建下载任务
     NSURLSessionDownloadTask *task = [ses downloadTaskWithURL:url];
     [task resume];
-    
     [self.searchBar resignFirstResponder];
 }
 
-- (void)renderBody{
-    self.bodyScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - 80)];
-    self.bodyScrollView.backgroundColor = [UIColor colorWithRed:222.0/255 green:222.0/255 blue:222.0/255 alpha:1];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];//去处需要的路径
-    NSDirectoryEnumerator<NSString *> * myDirectoryEnumerator;
-    myDirectoryEnumerator =  [fileManager enumeratorAtPath:documentsDirectory];
+- (void)renderBody:(NSMutableArray *) localMusics{
+    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - 80) style:UITableViewStylePlain];
+    //设置列表数据源
+    self.tableView.delegate = self;
+    self.tableView.backgroundColor = [UIColor whiteColor];
+    self.tableView.dataSource = self;
+    self.tableView.allowsSelectionDuringEditing=YES;
+    [self.view addSubview:self.tableView];
     
-    self.songsArray = [[NSMutableArray alloc]init];
-    self.itemY = 0;
-    while (documentsDirectory = [myDirectoryEnumerator nextObject]) {
-        for (NSString * namePath in documentsDirectory.pathComponents) {
-            //构造文件json
-            NSDictionary *songItem =  @{@"name":[NSString stringWithFormat:@"%@",namePath],@"path":[NSString stringWithFormat:@"%@/%@",[paths objectAtIndex:0],namePath]};
-            [self.songsArray addObject:songItem];
-        }
+    NSMutableArray *d = [[NSMutableArray alloc]init];
+    for (NSDictionary *item in localMusics){
+        UserEntity *entity = [[UserEntity alloc] initWithName:item[@"name"] Phone:@"11111111111"];
+        [d addObject:entity];
     }
-    
-    int index = 0;
-    for (NSDictionary *item in self.songsArray){
-        
-        UIButton *musicItemLab = [[UIButton alloc]initWithFrame:CGRectMake(0, self.itemY, [UIScreen mainScreen].bounds.size.width, 65)];
-        [musicItemLab setTitleColor:[UIColor blackColor]forState:UIControlStateNormal];
-        [musicItemLab setTitle:[NSString stringWithFormat:@"%@",item[@"name"]] forState:UIControlStateNormal];
-        musicItemLab.backgroundColor = [UIColor whiteColor];
-        musicItemLab.tag = index;
-        musicItemLab.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-        musicItemLab.titleLabel.textAlignment = NSTextAlignmentLeft;
-        musicItemLab.titleEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 0);
-        index++;
-        self.bodyScrollView.contentSize = CGSizeMake([UIScreen mainScreen].bounds.size.width,index * 65 + 5);
-        [musicItemLab addTarget:self action:@selector(playAudio:) forControlEvents:UIControlEventTouchUpInside];
-        self.itemY += 66;
-        [self.bodyScrollView addSubview:musicItemLab];
-    }
-    
-    NSLog(@"===数组%@",self.songsArray);
-    
-    [self.view addSubview:self.bodyScrollView];
+    _dataSource = d;
 }
 
 - (void)renderFooter{
@@ -124,34 +106,28 @@
     [self.view addSubview:footView];
 }
 
-
-- (void)playAudio:(UIButton *)btn{
-    id currItem = [self.songsArray objectAtIndex:btn.tag];
-    self.labTip.text = [NSString stringWithFormat:@"正在播放：%@",currItem[@"name"]];
-    /* 初始化url */
-    NSURL *url = [[NSURL alloc] initFileURLWithPath:[NSString stringWithFormat:@"%@",currItem[@"path"]]];
-    NSLog(@"播放=====%@",url);
-    /* 初始化音频文件 */
-    _player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
-    _player.volume=1.0;
+- (NSMutableArray *)getLocalMusics{
+    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];//去处需要的路径
+    NSDirectoryEnumerator<NSString *> *myDirectoryEnumerator;
+    myDirectoryEnumerator =  [self.fileManager enumeratorAtPath:documentsDirectory];
     
-    if (_player == nil)
-    {
-        NSLog(@"ERror creating player:");
+    self.songsArray = [[NSMutableArray alloc]init];
+    self.itemY = 0;
+    while (documentsDirectory = [myDirectoryEnumerator nextObject]) {
+        for (NSString * namePath in documentsDirectory.pathComponents) {
+            //构造文件json
+            NSDictionary *songItem =  @{@"name":[NSString stringWithFormat:@"%@",namePath],@"path":[NSString stringWithFormat:@"%@/%@",[paths objectAtIndex:0],namePath]};
+            [self.songsArray addObject:songItem];
+        }
     }
-    
-    /* 加载缓冲 */
-    [_player prepareToPlay];
-    [_player play];
-    
-
+    return self.songsArray;
 }
 
 // 开始下载
 - (void)startDownload:(UIButton *)btn {
     NSLog(@"%@",self.searchBar.text);
-    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration
-                                                                defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     // 确定URL
     NSURL *url = [[NSURL alloc]initWithString:self.searchBar.text];
     // 通过会话在确定的URL上创建下载任务
@@ -182,6 +158,68 @@ didFinishDownloadingToURL:(NSURL *)location{
 // 请求完成，错误调用的代理方法
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     NSLog(@"%@",error);
+}
+
+
+//tableview
+
+
+//返回列表每个分组section拥有cell行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _dataSource.count;
+}
+
+//配置每个cell，随着用户拖拽列表，cell将要出现在屏幕上时此方法会不断调用返回cell
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
+    UserEntity *entity = _dataSource[indexPath.row];
+    cell.detailTextLabel.text = entity.phone;
+    cell.textLabel.text = entity.name;
+    return cell;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"%ld",(long)indexPath.row);
+    id currItem = [self.songsArray objectAtIndex:indexPath.row];
+    self.labTip.text = [NSString stringWithFormat:@"正在播放：%@",currItem[@"name"]];
+    /* 初始化url */
+    NSURL *url = [[NSURL alloc] initFileURLWithPath:[NSString stringWithFormat:@"%@",currItem[@"path"]]];
+    /* 初始化音频文件 */
+    self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+    self.player.volume=1.0;
+    if (self.player == nil)
+    {
+        NSLog(@"ERror creating player:");
+    }
+    /* 加载缓冲 */
+    [self.player prepareToPlay];
+    [self.player play];
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete)
+    {
+        [self deleteMusic:indexPath.row]; // 在此处自定义删除行为
+    }
+    else
+    {
+       // DEBUG_OUT(@"Unhandled editing style: %ld", (long) editingStyle);
+    }
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return @"删除";
+}
+
+//删除音乐
+- (void)deleteMusic:(NSInteger) section{
+    [self.fileManager removeItemAtPath:[self.songsArray objectAtIndex:section][@"path"] error:nil];
+    [self.songsArray removeObjectAtIndex:section];
+    [self renderBody:self.songsArray];
 }
 
 @end
