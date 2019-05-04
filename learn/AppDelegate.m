@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import <AVFoundation/AVFoundation.h>
+#import "LayoutViewController.h"
 @interface AppDelegate ()
 @property (nonatomic,strong)AVAudioPlayer *player;
 @end
@@ -20,6 +21,23 @@
     AVAudioSession * session = [AVAudioSession sharedInstance];
     [session setActive:YES error:nil];
     [session setCategory:AVAudioSessionCategoryPlayback error:nil];
+    
+    LayoutViewController *lay = [[LayoutViewController alloc]init];
+    self.window.rootViewController = lay;
+    // 取到分栏控制器的分栏
+    UITabBar *tabBar = lay.tabBar;
+    // 设置分栏的风格
+    tabBar.barStyle = UIBarStyleBlack;
+    // 是否透明
+    tabBar.translucent = NO;
+    // 设置分栏的前景颜色
+    tabBar.barTintColor = [UIColor whiteColor];    
+    // 设置分栏元素项的颜色
+    tabBar.tintColor = [UIColor colorWithRed:57.0/255 green:192.0/255 blue:125.0/255 alpha:1];
+    // 设置分栏按钮的选中指定图片
+    //tabBar.selectionIndicatorImage = [UIImage imageNamed:@"WeChat5f8b2665bed2b7b697934261bdd65b15.png"];
+    [self.window makeKeyAndVisible];
+    
     return YES;
 }
 

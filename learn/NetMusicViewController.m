@@ -1,9 +1,9 @@
-#import "ViewController.h"
+#import "NetMusicViewController.h"
 #import "./utils/AudioPlayer.h"
 #import <AVKit/AVKit.h>
 #import "Songs.h"
 
-@interface ViewController () <NSURLSessionDownloadDelegate,UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
+@interface NetMusicViewController () <NSURLSessionDownloadDelegate,UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
 @property float itemY;
 @property (nonatomic,strong) AVAudioPlayer *player;
 @property (nonatomic,strong) NSMutableArray *songsArray;
@@ -14,15 +14,15 @@
 @property (nonatomic,strong) NSFileManager *fileManager;
 @end
 
-@implementation ViewController
+@implementation NetMusicViewController
 -(void)viewDidLoad{
     
     self.fileManager = [NSFileManager defaultManager];
     
     [self rederHeader];
     [self renderBody:[self getLocalMusics]];
-    [self renderFooter];
-   
+    //[self renderFooter];
+    
 }
 
 //结束时调用
@@ -33,14 +33,11 @@
 }
 
 - (void)rederHeader{
-    
-    
-    
     UILabel *headLable = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 147)];
     headLable.backgroundColor = [UIColor colorWithRed:57.0/255 green:192.0/255 blue:125.0/255 alpha:1];
     headLable.userInteractionEnabled = YES;
     UILabel *titleLable = [[UILabel alloc]initWithFrame:CGRectMake(0, 40, [UIScreen mainScreen].bounds.size.width, 40)];
-    titleLable.text = @"我的音乐";
+    titleLable.text = @"网络音乐";
     titleLable.textColor = [UIColor whiteColor];
     titleLable.textAlignment = NSTextAlignmentCenter;
     [headLable addSubview:titleLable];
@@ -48,10 +45,11 @@
     self.searchBar = [[UISearchBar alloc]initWithFrame:CGRectMake(([UIScreen mainScreen].bounds.size.width - [UIScreen mainScreen].bounds.size.width * 0.9)/2,titleLable.frame.origin.y + 46, [UIScreen mainScreen].bounds.size.width * 0.9, 40)];
     self.searchBar.delegate = self;// 设置代理
     self.searchBar.searchBarStyle = UISearchBarStyleMinimal;
-    self.searchBar.placeholder = @"搜索";
+    self.searchBar.placeholder = @"网络搜索";
     self.searchBar.tintColor = [UIColor whiteColor];
     self.searchBar.barTintColor = [UIColor whiteColor];
-
+        self.searchBar.text = @"http://fs.w.kugou.com/201905021157/d6b8f8460a16cdcc2a8cbaa467f7faa3/G006/M00/14/01/poYBAFS8u2iAclsoAD5mXxPRhCQ530.mp3";
+    
     UITextField *textfield = [self.searchBar valueForKey:@"_searchField"];
     [textfield setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     textfield.textColor = [UIColor whiteColor];
@@ -143,7 +141,7 @@ totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)
 }
 // 重新恢复下载的代理方法
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
-    didResumeAtOffset:(int64_t)fileOffset expectedTotalBytes:(int64_t)expectedTotalBytes{
+didResumeAtOffset:(int64_t)fileOffset expectedTotalBytes:(int64_t)expectedTotalBytes{
 }
 // 写入数据到本地的时候会调用的方法
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
@@ -206,7 +204,7 @@ didFinishDownloadingToURL:(NSURL *)location{
     }
     else
     {
-       // DEBUG_OUT(@"Unhandled editing style: %ld", (long) editingStyle);
+        // DEBUG_OUT(@"Unhandled editing style: %ld", (long) editingStyle);
     }
 }
 
