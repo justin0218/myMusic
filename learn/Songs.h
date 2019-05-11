@@ -12,7 +12,11 @@
 @interface UserEntity : NSObject
     @property(nonatomic,strong)NSString *name;
     @property(nonatomic,strong)NSString *phone;
-    -(id)initWithName:(NSString *)name Phone:(NSString *)phone;
+    @property(nonatomic,strong)NSString *url;
+    @property(nonatomic)NSNumber *songId;
+    @property(nonatomic)NSString *singer;
+
+    -(id)initWithName:(NSString *)name Phone:(NSString *)phone Url:(NSString *)url SongId:(NSNumber *)songId Singer:(NSString *)singer;
 @end
 
 #endif /* Songs_h */

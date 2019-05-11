@@ -18,6 +18,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     AVAudioSession * session = [AVAudioSession sharedInstance];
     [session setActive:YES error:nil];
     [session setCategory:AVAudioSessionCategoryPlayback error:nil];
@@ -26,6 +27,7 @@
     self.window.rootViewController = lay;
     // 取到分栏控制器的分栏
     UITabBar *tabBar = lay.tabBar;
+   
     // 设置分栏的风格
     tabBar.barStyle = UIBarStyleBlack;
     // 是否透明
@@ -37,6 +39,19 @@
     // 设置分栏按钮的选中指定图片
     //tabBar.selectionIndicatorImage = [UIImage imageNamed:@"WeChat5f8b2665bed2b7b697934261bdd65b15.png"];
     [self.window makeKeyAndVisible];
+    
+    
+    // 修改导航颜色
+    
+//    [[UINavigationBar appearance] setBarTintColor:[UIColor blueColor]];
+//    lay.navigationController.navigationBarHidden = NO;
+//    //左边按钮
+//    UIBarButtonItem *leftButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(selectLeftAction:)];
+//   lay.navigationItem.leftBarButtonItem = leftButton;
+//
+//    //右边按钮
+//    UIBarButtonItem *rightButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(selectRightAction2:)];
+//   lay.navigationItem.rightBarButtonItem = rightButton;
     
     return YES;
 }

@@ -1,35 +1,87 @@
 #import "NetMusicViewController.h"
-#import "./utils/AudioPlayer.h"
 #import <AVKit/AVKit.h>
 #import "Songs.h"
+#import "Request.h"
 
 @interface NetMusicViewController () <NSURLSessionDownloadDelegate,UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
-@property float itemY;
-@property (nonatomic,strong) AVAudioPlayer *player;
 @property (nonatomic,strong) NSMutableArray *songsArray;
 @property UILabel *labTip;
 @property (nonatomic,strong) UISearchBar *searchBar;
 @property (nonatomic,strong) UITableView *tableView;
 @property (nonatomic,strong) NSMutableArray *dataSource;
 @property (nonatomic,strong) NSFileManager *fileManager;
+@property (nonatomic,strong) NSDictionary *tasks;
+@property (nonatomic,strong) UILabel *progressTxt;
+@property (nonatomic,strong) UIView *shadowView;
+
+@property (nonatomic) NSInteger currTast;
 @end
 
 @implementation NetMusicViewController
 -(void)viewDidLoad{
     
     self.fileManager = [NSFileManager defaultManager];
-    
     [self rederHeader];
-    [self renderBody:[self getLocalMusics]];
-    //[self renderFooter];
+    UITabBarController *tabBarVC = [[UITabBarController alloc] init];
+    CGFloat tabBarHeight = tabBarVC.tabBar.frame.size.height;
+    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight) style:UITableViewStylePlain];
+    //设置列表数据源
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
+    self.tableView.backgroundColor = [UIColor whiteColor];
+    self.tableView.allowsSelectionDuringEditing=YES;
+    [self.view addSubview:self.tableView];
+    
+    
+    self.shadowView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+    self.shadowView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.7];
+    
+    self.progressTxt = [[UILabel alloc]initWithFrame:CGRectMake(self.shadowView.frame.size.width/2-50, self.shadowView.frame.size.height/2-40, 100, 40)];
+    self.progressTxt.text = @"进度:0%";
+    self.progressTxt.textColor = [UIColor whiteColor];
+    [self.shadowView addSubview:self.progressTxt];
+    [self.view addSubview:self.shadowView];
+    self.shadowView.hidden = YES;
     
 }
 
-//结束时调用
-- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
+- (void)viewDidAppear:(BOOL)animated{
+   [self getNetMusics];
+}
+
+//获取网络上的音乐
+- (void)getNetMusics
 {
-    NSLog(@"结束了");
-    [self.player play];
+    NSString * docsdir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *dataFilePath = [docsdir stringByAppendingPathComponent:@"localmusic"];
+    NSArray *fileList = [[NSArray alloc] init];
+    fileList = [self.fileManager contentsOfDirectoryAtPath:dataFilePath error:nil];
+    
+    NewRequest *req = [[NewRequest alloc]init];
+    [req get:@"https://momoman.cn/v1/music/list" callBack:^(NSDictionary *data) {
+        dispatch_async(dispatch_get_main_queue(),^{
+            NSMutableArray *d = [[NSMutableArray alloc]init];
+            for (NSDictionary *item in data[@"data"]){
+                BOOL isHas = [self inArray:fileList strValue:[NSString stringWithFormat:@"%@.json",item[@"id"]]];
+                if(!isHas){
+                    NSNumber *taskNo = (NSNumber*)item[@"id"];
+                    UserEntity *entity = [[UserEntity alloc] initWithName:item[@"name"] Phone:item[@"singer"] Url:item[@"url"] SongId:taskNo Singer:item[@"singer"]];
+                    [d addObject:entity];
+                }
+            }
+            self.dataSource = d;
+            [self.tableView reloadData];
+        });
+    }];
+}
+
+- (BOOL)inArray:(NSArray *) arr strValue:(NSString *) strval{
+    for (NSString *val in arr) {
+        if([val isEqualToString:strval]){
+            return true;
+        }
+    }
+    return false;
 }
 
 - (void)rederHeader{
@@ -48,8 +100,6 @@
     self.searchBar.placeholder = @"网络搜索";
     self.searchBar.tintColor = [UIColor whiteColor];
     self.searchBar.barTintColor = [UIColor whiteColor];
-        self.searchBar.text = @"http://fs.w.kugou.com/201905021157/d6b8f8460a16cdcc2a8cbaa467f7faa3/G006/M00/14/01/poYBAFS8u2iAclsoAD5mXxPRhCQ530.mp3";
-    
     UITextField *textfield = [self.searchBar valueForKey:@"_searchField"];
     [textfield setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     textfield.textColor = [UIColor whiteColor];
@@ -61,110 +111,56 @@
     if([self.searchBar.text isEqual:@""]){
         return;
     }
-    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration
-                                                                defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-    // 确定URL
-    NSURL *url = [[NSURL alloc]initWithString:self.searchBar.text];
-    // 通过会话在确定的URL上创建下载任务
-    NSURLSessionDownloadTask *task = [ses downloadTaskWithURL:url];
-    [task resume];
-    [self.searchBar resignFirstResponder];
 }
 
-- (void)renderBody:(NSMutableArray *) localMusics{
-    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - 80) style:UITableViewStylePlain];
-    //设置列表数据源
-    self.tableView.delegate = self;
-    self.tableView.backgroundColor = [UIColor whiteColor];
-    self.tableView.dataSource = self;
-    self.tableView.allowsSelectionDuringEditing=YES;
-    [self.view addSubview:self.tableView];
-    
-    NSMutableArray *d = [[NSMutableArray alloc]init];
-    for (NSDictionary *item in localMusics){
-        UserEntity *entity = [[UserEntity alloc] initWithName:item[@"name"] Phone:@"11111111111"];
-        [d addObject:entity];
-    }
-    _dataSource = d;
-}
-
-- (void)renderFooter{
-    UIView *footView = [[UIView alloc] initWithFrame:CGRectMake(0, [UIScreen mainScreen].bounds.size.height - 80, [UIScreen mainScreen].bounds.size.width, 80)];
-    footView.backgroundColor = [UIColor whiteColor];
-    footView.layer.shadowColor = [UIColor blackColor].CGColor;
-    footView.layer.shadowOffset = CGSizeMake(0,0);
-    footView.layer.shadowOpacity = 0.4;
-    footView.layer.masksToBounds = YES;
-    footView.clipsToBounds = NO;
-    
-    self.labTip = [[UILabel alloc]initWithFrame:CGRectMake(0, 14, footView.frame.size.width, footView.frame.size.height - 20)];
-    self.labTip.textAlignment = NSTextAlignmentCenter;
-    self.labTip.textColor = [UIColor blackColor];
-    [footView addSubview:self.labTip];
-    [self.view addSubview:footView];
-}
-
-- (NSMutableArray *)getLocalMusics{
-    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];//去处需要的路径
-    NSDirectoryEnumerator<NSString *> *myDirectoryEnumerator;
-    myDirectoryEnumerator =  [self.fileManager enumeratorAtPath:documentsDirectory];
-    
-    self.songsArray = [[NSMutableArray alloc]init];
-    self.itemY = 0;
-    while (documentsDirectory = [myDirectoryEnumerator nextObject]) {
-        for (NSString * namePath in documentsDirectory.pathComponents) {
-            //构造文件json
-            NSDictionary *songItem =  @{@"name":[NSString stringWithFormat:@"%@",namePath],@"path":[NSString stringWithFormat:@"%@/%@",[paths objectAtIndex:0],namePath]};
-            [self.songsArray addObject:songItem];
-        }
-    }
-    return self.songsArray;
-}
-
-// 开始下载
-- (void)startDownload:(UIButton *)btn {
-    NSLog(@"%@",self.searchBar.text);
-    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-    // 确定URL
-    NSURL *url = [[NSURL alloc]initWithString:self.searchBar.text];
-    // 通过会话在确定的URL上创建下载任务
-    NSURLSessionDownloadTask *task = [ses downloadTaskWithURL:url];
-    [task resume];
-}
 
 // 下载了数据的过程中会调用的代理方法
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten
 totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite{
-    NSLog(@"下载进度:%lf",1.0 * totalBytesWritten / totalBytesExpectedToWrite);
-    self.searchBar.text = [NSString stringWithFormat:@"%lf",1.0 * totalBytesWritten / totalBytesExpectedToWrite];
+    self.progressTxt.text = [NSString stringWithFormat:@"进度:%2.lf",100.0 * totalBytesWritten / totalBytesExpectedToWrite];
+    self.progressTxt.text = [self.progressTxt.text stringByAppendingString: @"%"];
 }
-// 重新恢复下载的代理方法
--(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
-didResumeAtOffset:(int64_t)fileOffset expectedTotalBytes:(int64_t)expectedTotalBytes{
-}
+
 // 写入数据到本地的时候会调用的方法
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
 didFinishDownloadingToURL:(NSURL *)location{
-    NSString* fullPath =
-    [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
-     stringByAppendingPathComponent:downloadTask.response.suggestedFilename];
+    NSString *taskkey = [NSString stringWithFormat:@"task_%ld",downloadTask.taskIdentifier];
+    UserEntity *entity = [self.tasks objectForKey:taskkey];
+    NSString * docsdir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *dataFilePath = [docsdir stringByAppendingPathComponent:@"localmusic"];
+    NSString *songsPath = [docsdir stringByAppendingPathComponent:@"songs"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
+    // fileExistsAtPath 判断一个文件或目录是否有效，isDirectory判断是否一个目录
+    BOOL existed = [fileManager fileExistsAtPath:dataFilePath isDirectory:&isDir];
+    if (!(isDir && existed)) {
+        [fileManager createDirectoryAtPath:dataFilePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    BOOL existed2 = [fileManager fileExistsAtPath:songsPath isDirectory:&isDir];
+    if (!(isDir && existed2)) {
+        [fileManager createDirectoryAtPath:songsPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString *musicPath = [NSString stringWithFormat:@"%@/%@.mp3",songsPath,entity.songId];
+    [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:musicPath] error:nil];
+    NSString *dataPath = [dataFilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.json",entity.songId]];
+    NSDictionary *localJosn = @{@"name":entity.name,@"path":musicPath,@"songId":entity.songId,@"singer":entity.singer};
+    // 文件写入
+    [localJosn writeToFile:dataPath atomically:YES];
     
-    [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:fullPath] error:nil];
-    NSLog(@"%@",fullPath);
+    [self.dataSource removeObjectAtIndex:(long)self.currTast];
+    [self.tableView reloadData];
+    self.shadowView.hidden = YES;
+    self.progressTxt.text = @"进度:0%";
 }
 // 请求完成，错误调用的代理方法
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     NSLog(@"%@",error);
 }
 
-
 //tableview
-
-
 //返回列表每个分组section拥有cell行数
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _dataSource.count;
+    return self.dataSource.count;
 }
 
 //配置每个cell，随着用户拖拽列表，cell将要出现在屏幕上时此方法会不断调用返回cell
@@ -179,45 +175,21 @@ didFinishDownloadingToURL:(NSURL *)location{
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"%ld",(long)indexPath.row);
-    id currItem = [self.songsArray objectAtIndex:indexPath.row];
-    self.labTip.text = [NSString stringWithFormat:@"正在播放：%@",currItem[@"name"]];
-    /* 初始化url */
-    NSURL *url = [[NSURL alloc] initFileURLWithPath:[NSString stringWithFormat:@"%@",currItem[@"path"]]];
-    /* 初始化音频文件 */
-    self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
-    self.player.volume=1.0;
-    if (self.player == nil)
-    {
-        NSLog(@"ERror creating player:");
-    }
-    /* 加载缓冲 */
-    [self.player prepareToPlay];
-    [self.player play];
+    self.shadowView.hidden = NO;
+    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration
+                                                                defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+    UserEntity *entity = [self.dataSource objectAtIndex:(long)indexPath.row];
+    NSURL *url = [[NSURL alloc]initWithString:entity.url];
+    // 通过会话在确定的URL上创建下载任务
+    NSURLSessionDownloadTask *task = [ses downloadTaskWithURL:url];
+    NSString *taskkey = [NSString stringWithFormat:@"task_%ld",task.taskIdentifier];
+    self.tasks = [NSDictionary dictionaryWithObject:entity forKey:taskkey];
+    self.currTast = (long)indexPath.row;
+    [task resume];
 }
 
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete)
-    {
-        [self deleteMusic:indexPath.row]; // 在此处自定义删除行为
-    }
-    else
-    {
-        // DEBUG_OUT(@"Unhandled editing style: %ld", (long) editingStyle);
-    }
-}
 
-- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    return @"删除";
-}
 
-//删除音乐
-- (void)deleteMusic:(NSInteger) section{
-    [self.fileManager removeItemAtPath:[self.songsArray objectAtIndex:section][@"path"] error:nil];
-    [self.songsArray removeObjectAtIndex:section];
-    [self renderBody:self.songsArray];
-}
+
 
 @end

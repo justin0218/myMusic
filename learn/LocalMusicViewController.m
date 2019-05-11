@@ -3,30 +3,36 @@
 #import <AVKit/AVKit.h>
 #import "Songs.h"
 
-@interface LocalMusicViewController () <NSURLSessionDownloadDelegate,UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
+@interface LocalMusicViewController () <UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate,AVAudioPlayerDelegate>
 @property float itemY;
 @property (nonatomic,strong) AVAudioPlayer *player;
-@property (nonatomic,strong) NSMutableArray *songsArray;
 @property UILabel *labTip;
 @property (nonatomic,strong) UISearchBar *searchBar;
 @property (nonatomic,strong) UITableView *tableView;
 @property (nonatomic,strong) NSMutableArray *dataSource;
 @property (nonatomic,strong) NSFileManager *fileManager;
+@property (nonatomic) BOOL isPlaying;
+
 @end
 
 @implementation LocalMusicViewController
 -(void)viewDidLoad{
-    
-    self.fileManager = [NSFileManager defaultManager];
-    
+    self.isPlaying = false;
     [self rederHeader];
-    
-    //[self renderFooter];
-   
+    self.fileManager = [NSFileManager defaultManager];
+    UITabBarController *tabBarVC = [[UITabBarController alloc] init];
+    CGFloat tabBarHeight = tabBarVC.tabBar.frame.size.height;
+    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight) style:UITableViewStylePlain];
+    //设置列表数据源
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    self.tableView.backgroundColor = [UIColor whiteColor];
+    self.tableView.allowsSelectionDuringEditing=YES;
+    [self.view addSubview:self.tableView];
 }
 
 - (void)viewDidAppear:(BOOL)animated{
-    [self renderBody:[self getLocalMusics]];
+    [self getLocalMusics];
 }
 
 
@@ -67,103 +73,26 @@
     if([self.searchBar.text isEqual:@""]){
         return;
     }
-    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration
-                                                                defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-    // 确定URL
-    NSURL *url = [[NSURL alloc]initWithString:self.searchBar.text];
-    // 通过会话在确定的URL上创建下载任务
-    NSURLSessionDownloadTask *task = [ses downloadTaskWithURL:url];
-    [task resume];
-    [self.searchBar resignFirstResponder];
-}
-
-- (void)renderBody:(NSMutableArray *) localMusics{
-    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - 80) style:UITableViewStylePlain];
-    //设置列表数据源
-    self.tableView.delegate = self;
-    self.tableView.backgroundColor = [UIColor whiteColor];
-    self.tableView.dataSource = self;
-    self.tableView.allowsSelectionDuringEditing=YES;
-    [self.view addSubview:self.tableView];
-    
-    NSMutableArray *d = [[NSMutableArray alloc]init];
-    for (NSDictionary *item in localMusics){
-        UserEntity *entity = [[UserEntity alloc] initWithName:item[@"name"] Phone:@"11111111111"];
-        [d addObject:entity];
-    }
-    _dataSource = d;
-}
-
-- (void)renderFooter{
-    UIView *footView = [[UIView alloc] initWithFrame:CGRectMake(0, [UIScreen mainScreen].bounds.size.height - 80, [UIScreen mainScreen].bounds.size.width, 80)];
-    footView.backgroundColor = [UIColor whiteColor];
-    footView.layer.shadowColor = [UIColor blackColor].CGColor;
-    footView.layer.shadowOffset = CGSizeMake(0,0);
-    footView.layer.shadowOpacity = 0.4;
-    footView.layer.masksToBounds = YES;
-    footView.clipsToBounds = NO;
-    
-    self.labTip = [[UILabel alloc]initWithFrame:CGRectMake(0, 14, footView.frame.size.width, footView.frame.size.height - 20)];
-    self.labTip.textAlignment = NSTextAlignmentCenter;
-    self.labTip.textColor = [UIColor blackColor];
-    [footView addSubview:self.labTip];
-    [self.view addSubview:footView];
 }
 
 - (NSMutableArray *)getLocalMusics{
-    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];//去处需要的路径
-    NSDirectoryEnumerator<NSString *> *myDirectoryEnumerator;
-    myDirectoryEnumerator =  [self.fileManager enumeratorAtPath:documentsDirectory];
-    
-    self.songsArray = [[NSMutableArray alloc]init];
-    self.itemY = 0;
-    while (documentsDirectory = [myDirectoryEnumerator nextObject]) {
-        for (NSString * namePath in documentsDirectory.pathComponents) {
-            //构造文件json
-            NSDictionary *songItem =  @{@"name":[NSString stringWithFormat:@"%@",namePath],@"path":[NSString stringWithFormat:@"%@/%@",[paths objectAtIndex:0],namePath]};
-            [self.songsArray addObject:songItem];
-        }
+    NSString * docsdir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *dataFilePath = [docsdir stringByAppendingPathComponent:@"localmusic"];
+    NSArray *fileList = [[NSArray alloc] init];
+    fileList = [self.fileManager contentsOfDirectoryAtPath:dataFilePath error:nil];
+    NSMutableArray *d = [[NSMutableArray alloc]init];
+    for (NSString *file in fileList) {
+        //构造文件json
+        NSString *jsonPath = [NSHomeDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"Documents/localmusic/%@",file]];
+        
+        // 取得数据
+        NSDictionary *data = [NSDictionary dictionaryWithContentsOfFile:jsonPath];
+        [d addObject:data];
     }
-    return self.songsArray;
+    self.dataSource = d;
+    [self.tableView reloadData];
+    return self.dataSource;
 }
-
-// 开始下载
-- (void)startDownload:(UIButton *)btn {
-    NSLog(@"%@",self.searchBar.text);
-    NSURLSession *ses = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-    // 确定URL
-    NSURL *url = [[NSURL alloc]initWithString:self.searchBar.text];
-    // 通过会话在确定的URL上创建下载任务
-    NSURLSessionDownloadTask *task = [ses downloadTaskWithURL:url];
-    [task resume];
-}
-
-// 下载了数据的过程中会调用的代理方法
--(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten
-totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite{
-    NSLog(@"下载进度:%lf",1.0 * totalBytesWritten / totalBytesExpectedToWrite);
-    self.searchBar.text = [NSString stringWithFormat:@"%lf",1.0 * totalBytesWritten / totalBytesExpectedToWrite];
-}
-// 重新恢复下载的代理方法
--(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
-    didResumeAtOffset:(int64_t)fileOffset expectedTotalBytes:(int64_t)expectedTotalBytes{
-}
-// 写入数据到本地的时候会调用的方法
--(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
-didFinishDownloadingToURL:(NSURL *)location{
-    NSString* fullPath =
-    [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject]
-     stringByAppendingPathComponent:downloadTask.response.suggestedFilename];
-    
-    [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:fullPath] error:nil];
-    NSLog(@"%@",fullPath);
-}
-// 请求完成，错误调用的代理方法
--(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    NSLog(@"%@",error);
-}
-
 
 //tableview
 
@@ -176,30 +105,34 @@ didFinishDownloadingToURL:(NSURL *)location{
 //配置每个cell，随着用户拖拽列表，cell将要出现在屏幕上时此方法会不断调用返回cell
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
-    UserEntity *entity = _dataSource[indexPath.row];
-    cell.detailTextLabel.text = entity.phone;
-    cell.textLabel.text = entity.name;
+    NSDictionary *entity = _dataSource[indexPath.row];
+    cell.detailTextLabel.text = entity[@"singer"];
+    cell.textLabel.text = entity[@"name"];
     return cell;
 }
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"%ld",(long)indexPath.row);
-    id currItem = [self.songsArray objectAtIndex:indexPath.row];
-    self.labTip.text = [NSString stringWithFormat:@"正在播放：%@",currItem[@"name"]];
+    id currItem = [self.dataSource objectAtIndex:indexPath.row];
     /* 初始化url */
-    NSURL *url = [[NSURL alloc] initFileURLWithPath:[NSString stringWithFormat:@"%@",currItem[@"path"]]];
+    NSString * docsdir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *dataFilePath = [docsdir stringByAppendingPathComponent:@"songs"];
+    NSURL *url = [[NSURL alloc] initFileURLWithPath:[NSString stringWithFormat:@"%@/%@.mp3",dataFilePath,currItem[@"songId"]]];
     /* 初始化音频文件 */
     self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+    self.player.delegate = self;
     self.player.volume=1.0;
     if (self.player == nil)
     {
         NSLog(@"ERror creating player:");
     }
-    /* 加载缓冲 */
-    [self.player prepareToPlay];
-    [self.player play];
+    
+     [self.player play];
+//
+//    /* 加载缓冲 */
+//    [self.player prepareToPlay];
+//    [self.player play];
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
@@ -221,9 +154,15 @@ didFinishDownloadingToURL:(NSURL *)location{
 
 //删除音乐
 - (void)deleteMusic:(NSInteger) section{
-    [self.fileManager removeItemAtPath:[self.songsArray objectAtIndex:section][@"path"] error:nil];
-    [self.songsArray removeObjectAtIndex:section];
-    [self renderBody:self.songsArray];
+    NSString * docsdir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *dataFilePath = [docsdir stringByAppendingPathComponent:@"songs"];
+    NSString *jsonFilePath = [docsdir stringByAppendingPathComponent:@"localmusic"];
+    NSString *songPath = [NSString stringWithFormat:@"%@/%@.mp3",dataFilePath,[self.dataSource objectAtIndex:section][@"songId"]];
+    NSString *jsonPath = [NSString stringWithFormat:@"%@/%@.json",jsonFilePath,[self.dataSource objectAtIndex:section][@"songId"]];
+    [self.fileManager removeItemAtPath:songPath error:nil];
+    [self.fileManager removeItemAtPath:jsonPath error:nil];
+    [self.dataSource removeObjectAtIndex:section];
+    [self.tableView reloadData];
 }
 
 @end

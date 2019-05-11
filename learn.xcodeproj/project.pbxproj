@@ -14,8 +14,8 @@
 		D09584C222743F0300DDBA69 /* AudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D09584C122743F0300DDBA69 /* AudioPlayer.m */; };
 		D0965268226B35210037F9AE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D0965267226B35210037F9AE /* AppDelegate.m */; };
 		D096526B226B35210037F9AE /* LocalMusicViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D096526A226B35210037F9AE /* LocalMusicViewController.m */; };
-		D096526E226B35210037F9AE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D096526C226B35210037F9AE /* Main.storyboard */; };
 		D0965276226B35230037F9AE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D0965275226B35230037F9AE /* main.m */; };
+		D09EB70222847DB100995438 /* Request.m in Sources */ = {isa = PBXBuildFile; fileRef = D09EB70022847DB100995438 /* Request.m */; };
 		D0BE512A2277D6C6001118C9 /* Songs.m in Sources */ = {isa = PBXBuildFile; fileRef = D0BE51292277D6C6001118C9 /* Songs.m */; };
 /* End PBXBuildFile section */
 
@@ -35,9 +35,10 @@
 		D0965267226B35210037F9AE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		D0965269226B35210037F9AE /* LocalMusicViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocalMusicViewController.h; sourceTree = "<group>"; };
 		D096526A226B35210037F9AE /* LocalMusicViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocalMusicViewController.m; sourceTree = "<group>"; };
-		D096526D226B35210037F9AE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		D0965274226B35230037F9AE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D0965275226B35230037F9AE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		D09EB70022847DB100995438 /* Request.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Request.m; path = ../../../macos/myapp2/myapp2/utils/Request.m; sourceTree = "<group>"; };
+		D09EB70122847DB100995438 /* Request.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Request.h; path = ../../../macos/myapp2/myapp2/utils/Request.h; sourceTree = "<group>"; };
 		D0BE512022775858001118C9 /* libobjc-trampolines.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libobjc-trampolines.tbd"; path = "usr/lib/libobjc-trampolines.tbd"; sourceTree = SDKROOT; };
 		D0BE512222775863001118C9 /* libobjc.A.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.A.tbd; path = usr/lib/libobjc.A.tbd; sourceTree = SDKROOT; };
 		D0BE512422775869001118C9 /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = usr/lib/libobjc.tbd; sourceTree = SDKROOT; };
@@ -67,6 +68,8 @@
 		D03AFE96226C9BC1006AC953 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				D09EB70122847DB100995438 /* Request.h */,
+				D09EB70022847DB100995438 /* Request.m */,
 				D03AFE9B226E0E3E006AC953 /* LAContextManager.h */,
 				D03AFE9C226E0E3E006AC953 /* LAContextManager.m */,
 				D09584C022743F0300DDBA69 /* AudioPlayer.h */,
@@ -116,7 +119,6 @@
 				D03AFE96226C9BC1006AC953 /* utils */,
 				D0965266226B35210037F9AE /* AppDelegate.h */,
 				D0965267226B35210037F9AE /* AppDelegate.m */,
-				D096526C226B35210037F9AE /* Main.storyboard */,
 				D0965274226B35230037F9AE /* Info.plist */,
 				D0965275226B35230037F9AE /* main.m */,
 			);
@@ -200,7 +202,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D096526E226B35210037F9AE /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,6 +213,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D096526B226B35210037F9AE /* LocalMusicViewController.m in Sources */,
+				D09EB70222847DB100995438 /* Request.m in Sources */,
 				D09584C222743F0300DDBA69 /* AudioPlayer.m in Sources */,
 				D011CB3A227A97490048E6A1 /* NetMusicViewController.m in Sources */,
 				D0965276226B35230037F9AE /* main.m in Sources */,
@@ -224,17 +226,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		D096526C226B35210037F9AE /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D096526D226B35210037F9AE /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		D0965277226B35230037F9AE /* Debug */ = {
@@ -359,9 +350,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = www.learn;
+				PRODUCT_BUNDLE_IDENTIFIER = learn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -375,9 +366,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = www.learn;
+				PRODUCT_BUNDLE_IDENTIFIER = learn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

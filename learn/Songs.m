@@ -10,13 +10,16 @@
 
 @implementation UserEntity
 
-    -(id)initWithName:(NSString *)name Phone:(NSString *)phone {
+-(id)initWithName:(NSString *)name Phone:(NSString *)phone Url:(NSString *)url SongId:(NSNumber *)songId Singer:(NSString *)singer{
         self = [super init];
         if (self) {
             self.name = name;
             self.phone = phone;
+            self.url = url;
+            self.songId = songId;
+            self.singer = singer;
         }
         return self;
-    }
+}
 
 @end
