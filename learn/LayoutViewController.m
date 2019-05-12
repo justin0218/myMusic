@@ -23,8 +23,14 @@
     
     LocalMusicViewController *local = [[LocalMusicViewController alloc]init];
     local.title = @"本地音乐";
+    local.tabBarItem.image = [UIImage imageNamed:@"local.png"];
+    local.tabBarItem.selectedImage = [ UIImage imageNamed : @"local_a.png"];
+
+    
     NetMusicViewController *net = [[NetMusicViewController alloc]init];
     net.title = @"网络音乐";
+    net.tabBarItem.image = [UIImage imageNamed:@"net.png"];
+    net.tabBarItem.selectedImage = [ UIImage imageNamed : @"net_a.png"];
     
     
     self.viewControllers = @[local,net];
