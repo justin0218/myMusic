@@ -3,6 +3,8 @@
 #import "Songs.h"
 #import "Request.h"
 
+#define isiPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1125, 2436), [[UIScreen mainScreen] currentMode].size) : NO)
+
 @interface NetMusicViewController () <NSURLSessionDownloadDelegate,UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate>
 @property (nonatomic,strong) NSMutableArray *songsArray;
 @property UILabel *labTip;
@@ -24,7 +26,14 @@
     [self rederHeader];
     UITabBarController *tabBarVC = [[UITabBarController alloc] init];
     CGFloat tabBarHeight = tabBarVC.tabBar.frame.size.height;
-    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight) style:UITableViewStylePlain];
+    
+    if(isiPhoneX){
+        self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight - 35) style:UITableViewStylePlain];
+    }else{
+        self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight) style:UITableViewStylePlain];
+    }
+    
+    
     //设置列表数据源
     self.tableView.dataSource = self;
     self.tableView.delegate = self;

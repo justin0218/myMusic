@@ -2,7 +2,7 @@
 #import "./utils/AudioPlayer.h"
 #import <AVKit/AVKit.h>
 #import "Songs.h"
-
+#define isiPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1125, 2436), [[UIScreen mainScreen] currentMode].size) : NO)
 @interface LocalMusicViewController () <UISearchBarDelegate,UITableViewDataSource,UITableViewDelegate,AVAudioPlayerDelegate>
 @property float itemY;
 @property (nonatomic,strong) AVAudioPlayer *player;
@@ -22,7 +22,14 @@
     self.fileManager = [NSFileManager defaultManager];
     UITabBarController *tabBarVC = [[UITabBarController alloc] init];
     CGFloat tabBarHeight = tabBarVC.tabBar.frame.size.height;
-    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight) style:UITableViewStylePlain];
+    
+    if(isiPhoneX){
+        self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight - 35) style:UITableViewStylePlain];
+    }else{
+        self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 147, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 147 - tabBarHeight) style:UITableViewStylePlain];
+    }
+    
+    
     //设置列表数据源
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
