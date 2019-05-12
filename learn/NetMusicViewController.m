@@ -43,7 +43,18 @@
     [self.view addSubview:self.shadowView];
     self.shadowView.hidden = YES;
     
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardHide:)];
+    //设置成NO表示当前控件响应后会传播到其他控件上，默认为YES。
+    tapGestureRecognizer.cancelsTouchesInView = NO;
+    //将触摸事件添加到当前view
+    [self.view addGestureRecognizer:tapGestureRecognizer];
+    
 }
+
+-(void)keyboardHide:(UITapGestureRecognizer*)tap{
+    [self.searchBar resignFirstResponder];
+}
+
 
 - (void)viewDidAppear:(BOOL)animated{
    [self getNetMusics];
@@ -108,6 +119,7 @@
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar{
+    [self.searchBar resignFirstResponder];
     if([self.searchBar.text isEqual:@""]){
         return;
     }
@@ -169,6 +181,13 @@ didFinishDownloadingToURL:(NSURL *)location{
     UserEntity *entity = _dataSource[indexPath.row];
     cell.detailTextLabel.text = entity.phone;
     cell.textLabel.text = entity.name;
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    
+    UIFont *font = [UIFont fontWithName:@"Heiti SC" size:16];
+    UIImage *wenbenImage = [self imageWithString:[NSString stringWithFormat:@"%@",entity.songId] font:font width:57 textAlignment:NSTextAlignmentLeft];
+    cell.imageView.image = wenbenImage;
+    
+    
     return cell;
 }
 
@@ -186,6 +205,58 @@ didFinishDownloadingToURL:(NSURL *)location{
     self.tasks = [NSDictionary dictionaryWithObject:entity forKey:taskkey];
     self.currTast = (long)indexPath.row;
     [task resume];
+}
+
+
+- (UIImage *)imageWithString:(NSString *)string font:(UIFont *)font width:(CGFloat)width textAlignment:(NSTextAlignment)textAlignment
+{
+    NSDictionary *attributeDic = @{NSFontAttributeName:font};
+    
+    CGSize size = [string boundingRectWithSize:CGSizeMake(width, 10000)
+                                       options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingTruncatesLastVisibleLine
+                                    attributes:attributeDic
+                                       context:nil].size;
+    
+    //    if ([UIScreen.mainScreen respondsToSelector:@selector(scale)])
+    //    {
+    //        if (UIScreen.mainScreen.scale == 2.0)
+    //        {
+    //            UIGraphicsBeginImageContextWithOptions(size, NO, 1.0);
+    //        } else
+    //        {
+    //            UIGraphicsBeginImageContext(size);
+    //        }
+    //    }
+    //    else
+    //    {
+    //        UIGraphicsBeginImageContext(size);
+    //    }
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    [[UIColor colorWithRed:0 green:0 blue:0 alpha:0] set];
+    
+    CGRect rect = CGRectMake(0, 0, size.width + 1, size.height + 1);
+    
+    CGContextFillRect(context, rect);
+    
+    
+    NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
+    paragraph.alignment = textAlignment;
+    
+    NSDictionary *attributes = @ {
+    NSForegroundColorAttributeName:[UIColor blackColor],
+    NSFontAttributeName:font,
+    NSParagraphStyleAttributeName:paragraph
+    };
+    
+    [string drawInRect:rect withAttributes:attributes];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return image;
 }
 
 
