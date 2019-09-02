@@ -78,7 +78,7 @@
     fileList = [self.fileManager contentsOfDirectoryAtPath:dataFilePath error:nil];
     
     NewRequest *req = [[NewRequest alloc]init];
-    [req get:@"https://momoman.cn/v1/music/list" callBack:^(NSDictionary *data) {
+    [req get:@"http://momoman.cn/v1/music/list" callBack:^(NSDictionary *data) {
         dispatch_async(dispatch_get_main_queue(),^{
             NSMutableArray *d = [[NSMutableArray alloc]init];
             for (NSDictionary *item in data[@"data"]){
